@@ -1,8 +1,9 @@
 import express from'express'
+import MongoStore from'connect-mongo'
 import{initMongoDB}from'./daos/mongodb/connection.js'
 import session from'express-session'
-import sessionFileStore from'session-file-store'
-//import mainRouter from'./routes/user.routes.js'
+// import sessionFileStore from'session-file-store'
+import mainRouter from'./routes/user.routes.js'
 import{errorHandler}from'./middlewares/error-handler.js'
 import productRouter from'./routes/product-router.js'
 import cookieParser from'cookie-parser'
@@ -14,23 +15,16 @@ import viewsRouter from'./routes/views.router.js'
 import{isAdmin,validateLogin}from'./middlewares/index.js'
 import'dotenv/config'
 
-const FileStore=sessionFileStore(session)
-
 const ttlSeconds=180
 
-const fileStoreOptions={
-    store:new FileStore({
-        path:'./sessions',
+const StoreOptions={
+    store:MongoStore.create({
+        mongoUrl:'mongodb+srv://zynhop6:N1rv4n4z0$@cluster0.yvuam.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0',
         ttl:ttlSeconds,
-        reapInterval:60
     }),
-
-    secret:'secretString',
+    secret:'1234',  
     resave:false,
     saveUninitialized:false,
-    cookie:{
-        maxAge:ttlSeconds*1000,
-    }
 }
 
 const app=express()
@@ -38,51 +32,9 @@ const app=express()
 app.use(express.json())
 app.use(cookieParser(process.env.SECRET_KEY))
 app.use(express.urlencoded({extended:true}))
+app.use(session(StoreOptions))
 
-app.use(session(fileStoreOptions))
-
-/*
-const sessionConfig={
-    secret:process.env.SECRET_KEY,
-    cookie:{maxAge:30000},
-    saveUninitialized:true,
-    resave:false,
-}
-
-app.use(session(sessionConfig))
-
-const users=[
-    {
-        username:'Juan',
-        password:'1234',
-        admin:false
-    },
-    {
-        username:'Guillermo',
-        password:'12345',
-        admin:true
-    }
-]
-
-app.post('/login',(req,res)=>{
-    const{username,password}=req.body
-    const index=users.findIndex((user)=>user.username===username&&user.password===password)
-    //console.log(index)
-    if(index<0)return res.status(400).json({message:'credenciales incorrectas'})
-    const user=users[index]
-    req.session.info={
-        loggedIn:true,
-        count:1,
-        admin:user.admin
-    }
-    res.json({ message:'Bienvenido/a'})
-})
-
-app.post('/logout',(req,res)=>{
-    req.session.destroy()
-    res.json({message:'logout ok'})
-})
-*/
+app.use('/api',mainRouter)
 
 app.use('/login',loginRouter)
 app.use('/',viewsRouter)

@@ -14,8 +14,9 @@ const users=[
 export const login=(req,res)=>{
     const{username,password}=req.body
     const index=users.findIndex((aUser)=>aUser.username===username&&aUser.password===password)
+    console.log(index)
     if(index<0)
-        res.status(400).json({msg:'credenciales incorrectas'})
+        res.status(401).json({msg:'no estas autorizado'})
     else{
         const user=users[index]
         req.session.info={
