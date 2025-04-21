@@ -1,4 +1,4 @@
-import{userDao}from'../daos/user-dao.js'
+import{userDao}from'../daos/mongodb/user-dao.js'
 import CustomError from'../utils/custom-error.js'
 import{createHash,isValidPassword}from'../utils/user-utils.js'
 
@@ -33,18 +33,6 @@ class UserService{
         }
     }
 
-/*
-    login=async(email,password)=>{
-        try{
-            const response=await this.dao.login(email,password)
-            if(!response)throw new CustomError('User not found',404)
-                return response
-        }catch(error){
-            throw error
-        }
-    }
-*/
-
     login=async(email,password)=>{
         try{
             const userExist=await this.dao.getByEmail(email)
@@ -70,6 +58,14 @@ class UserService{
             const response=await this.dao.getById(id)
             if(!response)throw new CustomError('User not found',404)
                 return response
+        }catch(error){
+            throw error
+        }
+    }
+
+    getByEmail=async(email)=>{
+        try{
+            return await this.dao.getByEmail(email)
         }catch(error){
             throw error
         }

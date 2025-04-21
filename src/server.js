@@ -13,6 +13,8 @@ import viewsRouter from'./routes/views.router.js'
 import userRouter from'./routes/user.routes.js'
 import mainRouter from'./routes/user.routes.js'
 import{isAdmin,validateLogin}from'./middlewares/index.js'
+import passport from'passport'
+import'./config/passport/local-strategy.js'
 import'dotenv/config'
 
 const ttlSeconds=180
@@ -27,6 +29,9 @@ const StoreOptions={
     saveUninitialized:false,
 }
 
+app.use(passport.initialize())
+app.use(passport.session())
+
 const app=express()
 
 app.use(express.json())
@@ -39,6 +44,7 @@ app.use('/api',mainRouter)
 app.use('/login',loginRouter)
 app.use('/',viewsRouter)
 app.use('/users',userRouter)
+app.use(errorHandler)
 app.use('/products',productRouter)
 app.use(errorHandler)
 

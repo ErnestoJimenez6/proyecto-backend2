@@ -7,8 +7,8 @@ class UserController{
 
     register=async(req,res,next)=>{
         try{
-            await this.service.register(req.body)
-            return res.redirect('/')
+            const response=await this.service.register(req.body)
+            res.json(response)
         }catch(error){
             next(error)
         }
@@ -24,26 +24,12 @@ class UserController{
         }
     }
 
-/*
-    login=async(req,res)=>{
-        const{email,password}=req.body
-        const user=await this.service.login(email,password)
-        if(user){
-            req.session.email=email
-            req.session.password=password
-            req.session.role=user.role
-            return res.redirect('/perfil')
-        }
-        return res.redirect('/errorlogin')
-    }
-*/
-
     login=async(req,res,next)=>{
         try{
             const{email,password}=req.body
             const user=await this.service.login(email,password)
-            req.session.first_name=user.first_name
-            return res.redirect('/profile')
+            const token=this.service.generateToken(user)
+            res.cookie('token',token,{httpOnly:true}).json({user,token})
         }catch(error){
             next(error)
         }
