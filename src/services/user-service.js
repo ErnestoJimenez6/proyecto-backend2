@@ -1,6 +1,8 @@
 import{userDao}from'../daos/mongodb/user-dao.js'
 import CustomError from'../utils/custom-error.js'
 import{createHash,isValidPassword}from'../utils/user-utils.js'
+import jwt from'jsonwebtoken'
+import'dotenv/config'
 
 class UserService{
     constructor(dao){
@@ -14,7 +16,7 @@ class UserService{
             if(existUser)throw new CustomError('El usuario ya existe',400)
             const response=await this.dao.create({
                 ...body,
-                password: createHash(password),
+                password:createHash(password),
             })
             if(!response)throw new CustomError('Error al registrar usuario',400)
             return response
@@ -43,6 +45,18 @@ class UserService{
         }catch(error){
             throw error
         }
+    }
+
+    generateToken=(user)=>{
+        const payload={
+            first_name:user.first_name,
+            last_name:user.last_name,
+            email:user.email,
+            role:user.role,
+        }
+        return jwt.sign(payload,process.env.JWT_SECRET, {
+            expiresIn:'20m',
+        })
     }
 
     getAll=async()=>{
