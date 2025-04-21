@@ -1,14 +1,9 @@
 import{Router}from'express'
+import{userController}from'../controllers/user.controllers.js'
+
 const router=Router()
-import{login,logout,visit,infoSession}from'../controllers/user.controllers.js'
-import{validateLogIn}from'../middlewares/middlewares.js'
 
-router.post('/login',login)
-
-router.get('/info',validateLogIn,infoSession)
-
-router.get('/secret-endpoint',validateLogIn,visit)
-
-router.post('/logout',logout)
+router.post('/register',userController.create)
+router.post('/login',userController.login)
 
 export default router

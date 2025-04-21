@@ -3,14 +3,6 @@ export default class MongoDao{
         this.model=model
     }
 
-    create=async(body)=>{
-        try{
-            return await this.model.create(body)
-        }catch(error){
-            throw new Error(error)
-        }
-    }
-
     getAll=async()=>{
         try{
             return await this.model.find({})
@@ -21,7 +13,15 @@ export default class MongoDao{
 
     getById=async(id)=>{
         try{
-            return await this.model.findById((id))
+            return await this.model.findById(id)
+        }catch(error){
+            throw new Error(error)
+        }
+    }
+
+    create=async(body)=>{
+        try{
+            return await this.model.create(body)
         }catch(error){
             throw new Error(error)
         }
@@ -37,7 +37,7 @@ export default class MongoDao{
 
     delete=async(id)=>{
         try{
-            return await this.model.findByIdAndDelete((id))
+            return await this.model.findByIdAndDelete(id)
         }catch(error){
             throw new Error(error)
         }

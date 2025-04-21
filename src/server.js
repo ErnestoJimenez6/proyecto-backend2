@@ -1,17 +1,17 @@
 import express from'express'
-import MongoStore from'connect-mongo'
-import{initMongoDB}from'./daos/mongodb/connection.js'
+import{initMongoDB}from'./db/database.js'
 import session from'express-session'
-// import sessionFileStore from'session-file-store'
-import mainRouter from'./routes/user.routes.js'
+import MongoStore from'connect-mongo'
 import{errorHandler}from'./middlewares/error-handler.js'
-import productRouter from'./routes/product-router.js'
 import cookieParser from'cookie-parser'
 import handlebars from'express-handlebars'
+import path from'path'
 import{__dirname}from'./utils/utils.js'
-import'dotenv/config'
 import loginRouter from'./routes/login.router.js'
+import productRouter from'./routes/product-router.js'
 import viewsRouter from'./routes/views.router.js'
+import userRouter from'./routes/user.routes.js'
+import mainRouter from'./routes/user.routes.js'
 import{isAdmin,validateLogin}from'./middlewares/index.js'
 import'dotenv/config'
 
@@ -19,10 +19,10 @@ const ttlSeconds=180
 
 const StoreOptions={
     store:MongoStore.create({
-        mongoUrl:'mongodb+srv://zynhop6:N1rv4n4z0$@cluster0.yvuam.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0',
+        mongoUrl:process.env.MONGO_URL,
         ttl:ttlSeconds,
     }),
-    secret:'1234',  
+    secret:process.env.SECRET_KEY,  
     resave:false,
     saveUninitialized:false,
 }
@@ -38,11 +38,13 @@ app.use('/api',mainRouter)
 
 app.use('/login',loginRouter)
 app.use('/',viewsRouter)
+app.use('/users',userRouter)
 app.use('/products',productRouter)
 app.use(errorHandler)
 
 app.engine('handlebars',handlebars.engine())
 app.set('views',__dirname+'/../views')
+app.set('views',path.join(`${process.cwd()}/src/views`))
 app.set('view engine','handlebars')
 
 app.get('/set-cookie',(req,res)=>{
