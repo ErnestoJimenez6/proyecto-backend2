@@ -3,7 +3,7 @@ import{productController}from'../controllers/product-controller.js'
 
 const router=Router()
 
-router.route('/')
+router.route('/product/:productId')
     .get(productController.getAll)
     .post(productController.create)
     .delete(productController.deleteAll)

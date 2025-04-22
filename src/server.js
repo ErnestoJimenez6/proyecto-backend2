@@ -40,7 +40,7 @@ const sessionOptions={
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser(process.env.SECRET_KEY))
-app.use(session(StoreOptions))
+app.use(session(sessionOptions))
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -53,9 +53,7 @@ app.use(express.static(`${__dirname}/public`))
 
 app.use('/api',apiRouter)
 app.use('/',viewsRouter)
-app.use('/users',userCustomRouter.getRouter())
 app.use('/login',loginRouter)
-app.use('/products',productRouter)
 
 app.engine('handlebars',handlebars.engine())
 app.set('views',path.join(__dirname,'../views'))
