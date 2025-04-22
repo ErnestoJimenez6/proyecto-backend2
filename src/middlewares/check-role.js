@@ -13,5 +13,5 @@ export const checkRole=(role)=>{
                 error:'You do not have permissions'
             })
             next()
-    };
+    }
 }

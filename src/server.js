@@ -13,7 +13,7 @@ import{errorHandler}from'./middlewares/error-handler.js'
 import{isAdmin,validateLogin}from'./middlewares/index.js'
 
 import apiRouter from'./routes/index.js'
-import{userCustomRouter}from'./routes/user-router.js'
+import userCustomRouter from'./routes/user.routes.js'
 import loginRouter from'./routes/login.router.js'
 import productRouter from'./routes/product-router.js'
 import viewsRouter from'./routes/views.router.js'
