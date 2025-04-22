@@ -7,8 +7,8 @@ class ProductController{
 
     getAll=async(req,res,next)=>{
         try{
-            const response=await this.service.getAll()
-            res.status(200).json(response)
+            const products=await this.service.getAll()
+            res.status(200).json(products)
         }catch(error){
             next(error)
         }
@@ -17,8 +17,8 @@ class ProductController{
     getById=async(req,res,next)=>{
         try{
             const{id}=req.params
-            const response=await this.service.getById(id)
-            res.status(200).json(response)
+            const product=await this.service.getById(id)
+            res.status(200).json(product)
         }catch(error){
             next(error)
         }
@@ -26,8 +26,9 @@ class ProductController{
 
     create=async(req,res,next)=>{
         try{
-            const response=await this.service.create(req.body)
-            res.status(201).json(response)
+            const product=req.body
+            const newProduct=await this.service.create(product)
+            res.status(201).json(newProduct)
         }catch(error){
             next(error)
         }
@@ -36,8 +37,8 @@ class ProductController{
     update=async(req,res,next)=>{
         try{
             const{id}=req.params
-            const response=await this.service.update(id,req.body)
-            res.status(200).json(response)
+            const updatedProduct=await this.service.update(id,req.body)
+            res.status(200).json(updatedProduct)
         }catch(error){
             next(error)
         }
@@ -46,8 +47,17 @@ class ProductController{
     delete=async(req,res,next)=>{
         try{
             const{id}=req.params
-            const response=await this.service.delete(id)
-            res.status(200).json(response)
+            const deletedProduct=await this.service.delete(id)
+            res.status(200).json(deletedProduct)
+        }catch(error){
+            next(error)
+        }
+    }
+
+    deleteAll=async(req,res,next)=>{
+        try{
+            await this.service.deleteAll()
+            res.send('products deleted successfully')
         }catch(error){
             next(error)
         }

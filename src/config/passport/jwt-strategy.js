@@ -1,17 +1,44 @@
-import{Strategy as JwtStrategy,ExtractJwt}from'passport-jwt'
+import passport from'passport'
+import{ExtractJwt,Strategy}from'passport-jwt'
 import{userService}from'../../services/user-service.js'
+import'dotenv/config'
 
-const options={
+const strategyConfig={
     jwtFromRequest:ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey:process.env.JWT_SECRET
+    secretOrKey:process.env.JWT_SECRET,
 }
 
-export const jwtStrategy=new JwtStrategy(options,async(payload,done)=>{
+const verifyToken=async(jwt_payload,done)=>{
+    if(!jwt_payload)return done(null,false,{messages:'Invalid Token'})
+    return done(null,jwt_payload)
+}
+
+passport.use('jwt',new Strategy(strategyConfig,verifyToken))
+
+const cookieExtractor=(req)=>{
+    return req.cookies.token
+}
+
+const strategyConfigCookies={
+        jwtFromRequest:ExtractJwt.fromExtractors([cookieExtractor]),
+        secretOrKey:process.env.JWT_SECRET
+}
+
+passport.use('jwt-cookies',new Strategy(strategyConfigCookies,verifyToken))
+
+passport.serializeUser((user,done)=>{
     try{
-        const user=await userService.getByEmail(payload.email)
-        if(!user)return done(null,false)
+        done(null,user._id)
+    }catch(error){
+        done(error)
+    }
+})
+
+passport.deserializeUser(async(id,done)=>{
+    try{
+        const user=await userService.getById(id)
         return done(null,user)
     }catch(error){
-        return done(error,false)
+        done(error)
     }
 })

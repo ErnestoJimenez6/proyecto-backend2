@@ -1,26 +1,30 @@
 import express from'express'
-import{initMongoDB}from'./db/database.js'
+import'dotenv/config'
+import path from'path'
 import session from'express-session'
 import MongoStore from'connect-mongo'
-import{errorHandler}from'./middlewares/error-handler.js'
 import cookieParser from'cookie-parser'
 import handlebars from'express-handlebars'
-import path from'path'
+import passport from'passport'
+
+import{initMongoDB}from'./db/database.js'
 import{__dirname}from'./utils/utils.js'
+import{errorHandler}from'./middlewares/error-handler.js'
+import{isAdmin,validateLogin}from'./middlewares/index.js'
+
+import apiRouter from'./routes/index.js'
+import{userCustomRouter}from'./routes/user-router.js'
 import loginRouter from'./routes/login.router.js'
 import productRouter from'./routes/product-router.js'
 import viewsRouter from'./routes/views.router.js'
-import userRouter from'./routes/user.routes.js'
-import{isAdmin,validateLogin}from'./middlewares/index.js'
-import passport from'passport'
-import'./config/passport/local-strategy.js'
-import'dotenv/config'
 
-const ttlSeconds=180
+import'./config/passport/local-strategy.js'
 
 const app=express()
+const PORT=8080
+const ttlSeconds=180
 
-const StoreOptions={
+const sessionOptions={
     store:MongoStore.create({
         mongoUrl:process.env.MONGO_URL,
         ttl:ttlSeconds,
@@ -28,24 +32,32 @@ const StoreOptions={
     secret:process.env.SECRET_KEY,  
     resave:false,
     saveUninitialized:false,
+    cookie:{
+        maxAge:180000,
+    }
 }
 
 app.use(express.json())
-app.use(cookieParser(process.env.SECRET_KEY))
 app.use(express.urlencoded({extended:true}))
-
+app.use(cookieParser(process.env.SECRET_KEY))
 app.use(session(StoreOptions))
 app.use(passport.initialize())
 app.use(passport.session())
 
+app.all('/*',(req,res,next)=>{
+    console.log(`[${new Date().toLocaleString()}] ${req.method} - ${req.originalUrl}`)
+    next()
+})
+
+app.use(express.static(`${__dirname}/public`))
+
+app.use('/api',apiRouter)
 app.use('/',viewsRouter)
-app.use('/users',userRouter)
+app.use('/users',userCustomRouter.getRouter())
 app.use('/login',loginRouter)
 app.use('/products',productRouter)
-app.use(errorHandler)
 
 app.engine('handlebars',handlebars.engine())
-
 app.set('views',path.join(__dirname,'../views'))
 app.set('view engine','handlebars')
 
@@ -64,7 +76,6 @@ app.get('/set-signed-cookie',(req,res)=>{
 })
 
 app.get('/get-cookie',(req,res)=>{
-    console.log(req.cookies)
     const{idioma}=req.cookies
     idioma==='ingles'?res.send('hello!'):res.send('hola!')
 })
@@ -75,7 +86,8 @@ app.get('/get-signed-cookie',(req,res)=>{
 })
 
 app.get('/clear-cookie',(req,res)=>{
-    res.clearCookie('idioma').json({message:'clear cookie ok'})
+    Object.keys(req.cookies).forEach((key)=>res.clearCookie(key))
+    res.json({message:'cookies cleared'})
 })
 
 app.get('/clear-cookies',(req,res)=>{
@@ -104,11 +116,12 @@ app.get('/admin-secret-endpoint',validateLogin,isAdmin,(req,res)=>{
     })
 })
 
+app.use(errorHandler)
+
 initMongoDB()
     .then(()=>console.log('Connected to MongoDB'))
     .catch((error)=>console.log(error))
 
-const PORT=8080
 app.listen(PORT,()=>{
     console.log(`Server listening on port ${PORT}`)
 })

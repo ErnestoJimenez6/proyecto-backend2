@@ -2,47 +2,30 @@ import{Router}from'express'
 import passport from'passport'
 import{userController}from'../controllers/user.controllers.js'
 import{isAuth}from'../middlewares/is-auth.js'
-import{checkAuthTokenHeaders,checkAuthTokenCookies}from'../middlewares/check-auth.js'
+import{checkRole}from'../middlewares/check-role.js'
 
 const router=Router()
 
-router.get('/register',(req,res)=>{
-    res.render('register')
+router.param('email',(req,res,next,email)=>{
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+    if(emailRegex.test(email))return next()
+    return res.status(400).send('email invalido')
 })
 
-router.get('/register',(req,res)=>{
-    res.redirect('/register')
+router.get('/email/:email',(req,res)=>{
+    res.status(200).send('email valido')
 })
 
-router.post(
-    '/register',
-    passport.authenticate('register'),
-    userController.register
-)
+router.all('/admin/*',passport.authenticate('jwt-cookies'),checkRole('admin'),(req,res,next)=>{
+    next()
+})
 
-router.post(
-    '/login',
-    passport.authenticate('login'),
-    userController.login
-)
+router.get('/admin/dashboard',(req,res)=>{
+    res.send('panel admin')
+})
 
-router.get(
-    '/current',
-    passport.authenticate('jwt',{session:false}),
-    (req,res)=>{
-        res.json({
-            first_name:req.user.first_name,
-            last_name:req.user.last_name,
-            email:req.user.email,
-            age:req.user.age,
-            role:req.user.role
-        })
-    }
-)
-
-router.get('/private',isAuth,(req,res)=>res.send('ruta privada'))
-
-router.get('/private-headers',checkAuthTokenHeaders,(req,res)=>res.send(req.user))
-router.get('/private-cookies',checkAuthTokenCookies,(req,res)=>res.send(req.user))
+router.get('*',(req,res)=>{
+    res.status(404).json({message:'Ruta inexistente'})
+})
 
 export default router

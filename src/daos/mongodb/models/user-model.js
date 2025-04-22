@@ -26,9 +26,13 @@ const UserSchema=new Schema({
         type:String,
         default:'user',
     },
-    cart:{
-        type:Schema.Types.ObjectId,
-        ref:'carts'
+    isGithub:{
+        type:Boolean,
+        default:false,
+    },
+    isGoogle:{
+        type:Boolean,
+        default:false,
     }
 })
 
