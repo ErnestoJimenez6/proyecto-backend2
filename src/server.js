@@ -1,32 +1,55 @@
-import express from'express'
-import'dotenv/config'
-import path from'path'
-import session from'express-session'
-import MongoStore from'connect-mongo'
-import cookieParser from'cookie-parser'
-import handlebars from'express-handlebars'
-import passport from'passport'
+import express from 'express'
+import {program} from 'commander'
+import path from 'path'
+import session from 'express-session'
+import MongoStore from 'connect-mongo'
+import cookieParser from 'cookie-parser'
+import handlebars from 'express-handlebars'
+import passport from 'passport'
 
-import{initMongoDB}from'./db/database.js'
-import{__dirname}from'./utils/utils.js'
-import{errorHandler}from'./middlewares/error-handler.js'
-import{isAdmin,validateLogin}from'./middlewares/index.js'
+import {initMongoDB} from './db/database.js'
+import {__dirname} from './utils/utils.js'
+import {errorHandler} from './middlewares/error-handler.js'
+import {isAdmin,validateLogin} from'./middlewares/index.js'
+import config from '../config/config.js'
+import './db/database.js'
 
-import apiRouter from'./routes/index.js'
-import userCustomRouter from'./routes/user.routes.js'
-import loginRouter from'./routes/login.router.js'
-import productRouter from'./routes/product-router.js'
-import viewsRouter from'./routes/views.router.js'
+import apiRouter from './routes/index.js'
+import userCustomRouter from './routes/api/user.routes.js'
+import loginRouter from './routes/login.router.js'
+import productRouter from './routes/api/product-router.js'
+import viewsRouter from './routes/views.router.js'
 
-import'./config/passport/local-strategy.js'
+import '../config/passport/jwt-strategy.js'
+import '../config/passport/local-strategy.js'
+
+//commander
+program
+    .option('-p, --port <port>','port server',config.PORT)
+    .option('-e, --env <environment>','environment server',config.ENV)
+    .parse(process.argv)
+
+const options=program.opts()
+const PORT=config.PORT
+const ENV=options.env
 
 const app=express()
-const PORT=8080
 const ttlSeconds=180
 
+//diagnostico
+console.log('=== Configuración del Servidor ===')
+console.log('🖥️CWD: ',process.cwd())
+console.log('🆔PID: ',process.pid)
+console.log('⚙️VERSION: ',process.version)
+console.log('💻PLATFORM: ',process.platform)
+console.log('🧠MEMORY: ', `${JSON.stringify(process.memoryUsage())}`)
+console.log(process.argv[2])
+console.log('==================================')
+
+//session
 const sessionOptions={
     store:MongoStore.create({
-        mongoUrl:process.env.MONGO_URL,
+        mongoUrl:config.MONGO_URL,
         ttl:ttlSeconds,
     }),
     secret:process.env.SECRET_KEY,  
@@ -34,9 +57,12 @@ const sessionOptions={
     saveUninitialized:false,
     cookie:{
         maxAge:180000,
+        secure:ENV==='prd',
+        httpOnly:true
     }
 }
 
+//middlewares
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser(process.env.SECRET_KEY))
@@ -44,38 +70,31 @@ app.use(session(sessionOptions))
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.all('/*',(req,res,next)=>{
-    console.log(`[${new Date().toLocaleString()}] ${req.method} - ${req.originalUrl}`)
+//solicitudes
+app.use((req,res,next)=>{
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`)
     next()
 })
 
-app.use(express.static(`${__dirname}/public`))
+app.use(express.static(path.join(__dirname,'public')))
 
-app.use('/api',apiRouter)
-app.use('/',viewsRouter)
-app.use('/login',loginRouter)
-
+//handlebars
 app.engine('handlebars',handlebars.engine())
 app.set('views',path.join(__dirname,'../views'))
 app.set('view engine','handlebars')
 
-app.get('/set-cookie',(req,res)=>{
-    res.cookie('idioma','ingles').json({message:'ok'})
-})
+//rutas
+app.use('/api',apiRouter)
+app.use('/users',userCustomRouter)
+app.use('/',viewsRouter)
+app.use('/products',productRouter)
+app.use('/login',loginRouter)
 
-app.get('/set-cookie2',(req,res)=>{
-    res.cookie('modo','oscuro').json({message:'ok'})
-})
-
+//cookies
 app.get('/set-signed-cookie',(req,res)=>{
     res
         .cookie('idioma','ingles',{signed:true,maxAge:10000})
         .json({message:'ok'})
-})
-
-app.get('/get-cookie',(req,res)=>{
-    const{idioma}=req.cookies
-    idioma==='ingles'?res.send('hello!'):res.send('hola!')
 })
 
 app.get('/get-signed-cookie',(req,res)=>{
@@ -83,43 +102,37 @@ app.get('/get-signed-cookie',(req,res)=>{
     idioma==='ingles'?res.send('hello!'):res.send('hola!')
 })
 
-app.get('/clear-cookie',(req,res)=>{
-    Object.keys(req.cookies).forEach((key)=>res.clearCookie(key))
-    res.json({message:'cookies cleared'})
-})
-
-app.get('/clear-cookies',(req,res)=>{
-    const cookies=req.cookies
-
-    const keys=Object.keys(cookies)
-
-    keys.forEach((key)=>res.clearCookie(key))
-
-    res.json({message:'clear cookies ok'})
-})
-
+//endpoints
 app.get('/secret-endpoint',validateLogin,(req,res)=>{
+    req.session.info=req.session.info||{count:0}
     req.session.info.count++
     res.json({
         message:'info para usuarios logueados',
-        session:req.session
+        session:req.session.info
     })
 })
 
 app.get('/admin-secret-endpoint',validateLogin,isAdmin,(req,res)=>{
+    req.session.info=req.session.info||{count:0}
     req.session.info.count++
     res.json({
         message:'info para usuarios admin',
-        session:req.session
+        session:req.session.info
     })
 })
 
+//manejo de errores
 app.use(errorHandler)
 
+//servidor
 initMongoDB()
-    .then(()=>console.log('Connected to MongoDB'))
-    .catch((error)=>console.log(error))
-
-app.listen(PORT,()=>{
-    console.log(`Server listening on port ${PORT}`)
-})
+    .then(()=>{
+        console.log('✅Connected to MongoDB')
+        app.listen(PORT,()=>{
+            console.log(`🚀Server listening on port ${PORT} in ${config.ENV} mode`)
+        })
+    })
+    .catch((error)=>{
+        console.error('❌Error al conectar a MongoDB:',error)
+        process.exit(1)
+    })

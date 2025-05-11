@@ -20,12 +20,12 @@ export default class Router{
         this.router.post(path,this.checkRoles(roles),this.resolveCallbacks(cb))
     }
 
-    put(path, roles,...cb) {
-        this.router.put(path, this.checkRoles(roles), this.resolveCallbacks(cb));
+    put(path,roles,...cb){
+        this.router.put(path,this.checkRoles(roles),this.resolveCallbacks(cb))
     }
 
-    delete(path,roles, ...cb){
-        this.router.delete(path, this.checkRoles(roles),this.resolveCallbacks(cb))
+    delete(path,roles,...cb){
+        this.router.delete(path,this.checkRoles(roles),this.resolveCallbacks(cb))
     }
 
     resolveCallbacks(callbacks){

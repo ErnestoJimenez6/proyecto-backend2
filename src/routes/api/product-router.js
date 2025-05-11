@@ -1,9 +1,9 @@
 import{Router}from'express'
-import{productController}from'../controllers/product-controller.js'
+import{productController}from'../../controllers/product-controller.js'
 
 const router=Router()
 
-router.route('/product/:productId')
+router.route('/')
     .get(productController.getAll)
     .post(productController.create)
     .delete(productController.deleteAll)

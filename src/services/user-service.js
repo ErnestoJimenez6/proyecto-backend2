@@ -39,9 +39,7 @@ class UserService{
 
     getById=async(id)=>{
         try{
-            const response=await this.dao.getById(id)
-            if(!response)throw new CustomError('User not found',404)
-                return response
+            return await this.dao.getById(id)
         }catch(error){
             throw error
         }
@@ -49,12 +47,13 @@ class UserService{
 
     generateToken=(user)=>{
         const payload={
+            _id:user._id,
             first_name:user.first_name,
             last_name:user.last_name,
             email:user.email,
             role:user.role,
         }
-        return jwt.sign(payload,process.env.JWT_SECRET, {
+        return jwt.sign(payload,process.env.JWT_SECRET,{
             expiresIn:'20m',
         })
     }
