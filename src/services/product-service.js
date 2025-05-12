@@ -6,53 +6,72 @@ class ProductService{
         this.dao=dao
     }
 
-    getAll=async()=>{
+    async getAll(filter={},options={}){
         try{
-            return await this.dao.getAll()
+            const products=await this.dao.getAll(filter,options)
+            if(!products||products.length===0){
+                throw new CustomError('No products found',404)
+            }
+            return products
         }catch(error){
-            throw new Error(error)
-            
+            throw this.handleError(error)
         }
     }
 
-    getById=async(id)=>{
+    async getById(id){
         try{
-            const response=await this.dao.getById(id)
-            if(!response)throw new CustomError('Product not found',404)
-                return response
+            const product=await this.dao.getById(id)
+            if(!product){
+                throw new CustomError(`Product with id ${id} not found`,404)
+            }
+            return product
         }catch(error){
-            throw error
+            throw this.handleError(error)
         }
     }
 
-    create=async(body)=>{
+    async create(productData){
         try{
-            const response=await this.dao.create(body)
-            if(!response)throw new CustomError('Error creating product',404)
-                return response
+            if(!productData.title||!productData.price){
+                throw new CustomError('Title and price are required',400)
+            }
+            const newProduct=await this.dao.create(productData)
+            return newProduct
         }catch(error){
-            throw(error)
+            throw this.handleError(error)
         }
     }
 
-    update=async(id,body)=>{
+    async update(id,updateData){
         try{
-            const response=await this.dao.update(id,body)
-            if(!response)throw new CustomError('Product not found',404)
-                return response
-        }catch(error){
-            throw(error)
+            const updatedProduct=await this.dao.update(id,updateData)
+            if(!updatedProduct){
+                throw new CustomError(`Product with id ${id} not found`,404)
+            }
+            return updatedProduct
+        } catch (error) {
+            throw this.handleError(error);
         }
     }
 
-    delete=async(id)=>{
+    async delete(id){
         try{
-            const response=await this.dao.delete(id)
-            if(!response)throw new CustomError('Product not found',404)
-                return response
+            const deletedProduct=await this.dao.delete(id)
+            if(!deletedProduct){
+                throw new CustomError(`Product with id ${id} not found`,404)
+            }
+            return deletedProduct
         }catch(error){
-            throw(error)
+            throw this.handleError(error)
         }
+    }
+
+    handleError(error){
+        if (error instanceof CustomError) {
+            return error
+        }
+        console.error('ProductService Error:',error.message)
+        return new CustomError('Internal Server Error',500)
     }
 }
 

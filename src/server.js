@@ -11,7 +11,7 @@ import {initMongoDB} from './db/database.js'
 import {__dirname} from './utils/utils.js'
 import {errorHandler} from './middlewares/error-handler.js'
 import {isAdmin,validateLogin} from'./middlewares/index.js'
-import config from '../config/config.js'
+import config from './config/config.js'
 import './db/database.js'
 
 import apiRouter from './routes/index.js'
@@ -20,8 +20,8 @@ import loginRouter from './routes/login.router.js'
 import productRouter from './routes/api/product-router.js'
 import viewsRouter from './routes/views.router.js'
 
-import '../config/passport/jwt-strategy.js'
-import '../config/passport/local-strategy.js'
+import './config/passport/jwt-strategy.js'
+import './config/passport/local-strategy.js'
 
 //commander
 program
