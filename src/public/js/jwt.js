@@ -5,7 +5,7 @@ const boton=document.getElementById('boton')
 
 form.onsubmit=(e)=>{
     e.preventDefault()
-    fetch('http://localhost:8080/users/login', {
+    fetch('http://localhost:8080/users/login',{
         method:'POST',
         body:JSON.stringify({
             email:inputEmail.value,

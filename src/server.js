@@ -12,9 +12,9 @@ import {__dirname} from './utils/utils.js'
 import {errorHandler} from './middlewares/error-handler.js'
 import {isAdmin,validateLogin} from'./middlewares/index.js'
 import config from './config/config.js'
-import './db/database.js'
 
 import apiRouter from './routes/index.js'
+import emailRouter from './routes/email-router.js'
 import userCustomRouter from './routes/api/user.routes.js'
 import loginRouter from './routes/login.router.js'
 import productRouter from './routes/api/product-router.js'
@@ -84,11 +84,11 @@ app.set('views',path.join(__dirname,'../views'))
 app.set('view engine','handlebars')
 
 //rutas
-app.use('/api',apiRouter)
+app.use('/api',apiRouter,emailRouter)
 app.use('/users',userCustomRouter)
-app.use('/',viewsRouter)
 app.use('/products',productRouter)
 app.use('/login',loginRouter)
+app.use('/',viewsRouter)
 
 //cookies
 app.get('/set-signed-cookie',(req,res)=>{
