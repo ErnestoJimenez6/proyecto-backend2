@@ -5,11 +5,11 @@ import {templateHtml} from '../utils/template.js'
 import 'dotenv/config'
 
 export const transporter=createTransport({
-    host:'gmail',
-    port:process.env.PORT_ETH,
+    service:'gmail',
+    port:process.env.PORT_GGL,
     auth:{
-        user:process.env.USER_ETH,
-        pass:process.env.PASS_ETH,
+        user:process.env.USER_GGL,
+        pass:process.env.PASS_GGL,
     },
 })
 
@@ -26,10 +26,9 @@ const hbsConfig={
 transporter.use('compile',hbs(hbsConfig))
 
 export const configMail={
-    from:process.env.USER_ETH,
-    to:process.env.USER_ETH,
+    from:process.env.USER_GGL,
+    to:process.env.USER_GGL,
     subject:'Bienvenido/a',
-    text:'Bienvenido/a',
     html:templateHtml,
     attachments:[
         {
@@ -40,12 +39,12 @@ export const configMail={
 }
 
 export const configMailHbs={
-    from:process.env.USER_ETH,
-    to:process.env.USER_ETH,
+    from:process.env.USER_GGL,
+    to:process.env.USER_GGL,
     subject:'Bienvenido/a',
     template:'email',
     context:{
         name:'Juan',
         text:'Te estabamos esperando'
     }
-};
+}
