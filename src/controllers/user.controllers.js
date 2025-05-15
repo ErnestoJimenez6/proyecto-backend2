@@ -1,14 +1,15 @@
-import{userService}from'../services/user-service.js'
+import {userService} from '../services/user-service.js'
+import {createResponse} from '../utils.js'
 
-class UserController{
+export default class UserController{
     constructor(service){
         this.service=service
     }
 
     register=async(req,res,next)=>{
         try{
-            const response=await this.service.register(req.body)
-            res.json(response)
+            const user=await this.service.register(req.body)
+            createResponse(res,201,user)
         }catch(error){
             next(error)
         }
@@ -16,8 +17,10 @@ class UserController{
 
     create=async(req,res,next)=>{
         try{
-            const response=await this.service.create(req.body)
-            if(!response)return res.redirect('/errorRegistro')
+            const user=await this.service.create(req.body)
+            if(!user){
+                return res.redirect('/errorRegistro')
+            }
             return res.redirect('/')
         }catch(error){
             next(error)
@@ -29,7 +32,18 @@ class UserController{
             const{email,password}=req.body
             const user=await this.service.login(email,password)
             const token=this.service.generateToken(user)
-            res.cookie('token',token,{httpOnly:true}).json({user,token})
+            res.cookie('token',token,{httpOnly:true})
+            createResponse(res,200,{user,token})
+        }catch(error){
+            next(error)
+        }
+    }
+
+    profile=async(req,res,next)=>{
+        try{
+            const{id}=req.user
+            const user=await this.service.getById(id)
+            createResponse(res,200,user)
         }catch(error){
             next(error)
         }
@@ -37,8 +51,8 @@ class UserController{
 
     getAll=async(req,res,next)=>{
         try{
-            const response=await this.service.getAll()
-            res.status(200).json(response)
+            const users=await this.service.getAll()
+            createResponse(res,200,users)
         }catch(error){
             next(error)
         }
@@ -47,8 +61,8 @@ class UserController{
     getById=async(req,res,next)=>{
         try{
             const{id}=req.params
-            const response=await this.service.getById(id)
-            res.status(200).json(response)
+            const user=await this.service.getById(id)
+            createResponse(res,200,user)
         }catch(error){
             next(error)
         }
@@ -57,8 +71,8 @@ class UserController{
     update=async(req,res,next)=>{
         try{
             const{id}=req.params
-            const response=await this.service.update(id,req.body)
-            res.status(200).json(response)
+            const updatedUser=await this.service.update(id,req.body)
+            createResponse(res,200,updatedUser)
         }catch(error){
             next(error)
         }
@@ -67,8 +81,11 @@ class UserController{
     delete=async(req,res,next)=>{
         try{
             const{id}=req.params
-            const response=await this.service.delete(id)
-            res.status(200).json(response)
+            const result=await this.service.delete(id)
+            createResponse(res,200,{ 
+                message:'User deleted successfully', 
+                result 
+            })
         }catch(error){
             next(error)
         }

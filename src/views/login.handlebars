@@ -1,11 +1,37 @@
-<h1>LOGIN</h1>
-<form action='/users/login' method='post'>
-    Email:
-    <input type='email' name='email' id='email' />
-    Password:
-    <input type='password' name='password' id='password' />
-    <input type='submit' value='INGRESAR' />
-</form>
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{title}} | Mi Ecommerce</title>
+        <link rel="stylesheet" href="../../public/CSS/styles.css">
+    </head>
+    <body>
+        <header class="header">
+            <div class="container">
+                <nav class="navbar">
+                    <a href="/" class="logo">Mi Ecommerce</a>
+                    <div class="nav-links">
+                        {{#if user}}
+                            <a href="/profile" class="nav-link">Perfil</a>
+                            <a href="/logout" class="nav-link">Cerrar Sesión</a>
+                        {{else}}
+                            <a href="/login" class="nav-link">Ingresar</a>
+                            <a href="/registro" class="nav-link">Registrarse</a>
+                        {{/if}}
+                    </div>
+                </nav>
+            </div>
+        </header>
 
-<h2>USUARIO NUEVO?</h2>
-<button onclick="location.href='/registro'">Ir a registro</button>
+        <main class="container">
+            {{{body}}}
+        </main>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2023 Mi Ecommerce. Todos los derechos reservados.</p>
+            </div>
+        </footer>
+    </body>
+</html>

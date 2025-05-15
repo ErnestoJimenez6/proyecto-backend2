@@ -1,4 +1,5 @@
-import{productService}from'../services/product-service.js'
+import {productService} from '../services/product-service.js'
+import {createResponse} from '../utils.js'
 
 class ProductController{
     constructor(service){
@@ -8,26 +9,7 @@ class ProductController{
     getAll=async(req,res,next)=>{
         try{
             const products=await this.service.getAll()
-            res.status(200).json(products)
-        }catch(error){
-            next(error)
-        }
-    }
-
-    create=async(req,res,next)=>{
-        try{
-            const product=req.body
-            const newProduct=await this.service.create(product)
-            res.status(201).json(newProduct)
-        }catch(error){
-            next(error)
-        }
-    }
-
-    deleteAll=async(req,res,next)=>{
-        try{
-            await this.service.deleteAll()
-            res.send('products deleted successfully')
+            createResponse(res,200,products)
         }catch(error){
             next(error)
         }
@@ -37,7 +19,16 @@ class ProductController{
         try{
             const{id}=req.params
             const product=await this.service.getById(id)
-            res.status(200).json(product)
+            createResponse(res,200,product)
+        }catch(error){
+            next(error)
+        }
+    }
+
+    create=async(req,res,next)=>{
+        try{
+            const newProduct=await this.service.create(req.body)
+            createResponse(res,201,newProduct)
         }catch(error){
             next(error)
         }
@@ -47,7 +38,7 @@ class ProductController{
         try{
             const{id}=req.params
             const updatedProduct=await this.service.update(id,req.body)
-            res.status(200).json(updatedProduct)
+            createResponse(res,200,updatedProduct)
         }catch(error){
             next(error)
         }
@@ -57,8 +48,17 @@ class ProductController{
         try{
             const{id}=req.params
             const deletedProduct=await this.service.delete(id)
-            res.status(200).json(deletedProduct)
+            createResponse(res,200,deletedProduct)
         }catch(error){
+        next(error)
+        }
+    }
+
+    deleteAll=async(req,res,next)=>{
+        try{
+            await this.service.deleteAll()
+            createResponse(res,200,'All products deleted successfully')
+        }catch (error){
             next(error)
         }
     }

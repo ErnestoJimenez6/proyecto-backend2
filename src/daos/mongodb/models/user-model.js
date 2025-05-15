@@ -26,6 +26,21 @@ const UserSchema=new Schema({
         type:String,
         default:'user',
     },
+    isGithub:{
+        type:Boolean,
+        required:true,
+        default:false,
+    },
+    isGoogle:{
+        type:Boolean,
+        required:true,
+        default:false,
+    },
+    cart:{      
+        type:chema.Types.ObjectId,
+        ref:'carts',
+        default:null
+    }
 })
 
 export const UserModel=model('user',UserSchema)

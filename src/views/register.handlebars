@@ -1,35 +1,22 @@
-<h1>Registro</h1>
+<div class="form-container">
+    <h1 class="form-title">Iniciar Sesión</h1>
+    {{#if error}}
+        <div class="alert alert-error">{{error}}</div>
+    {{/if}}
+    <form action='/users/login' method='post'>
+        <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input type='email' name='email' id='email' class="form-input" required />
+        </div>
+        <div class="form-group">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type='password' name='password' id='password' class="form-input" required />
+        </div>
+        <button type="submit" class="btn">INGRESAR</button>
+    </form>
 
-<form action="/users/register" method="post">
-    <label for="first_name"></label><input
-        type="text"
-        name="first_name"
-        id="first_name"
-        placeholder="Nombre"
-    />
-    <label for="last_name"></label><input
-        type="text"
-        name="last_name"
-        id="last_name"
-        placeholder="Apellido"
-    />
-    <label for="email"></label><input
-        type="email"
-        name="email"
-        id="email"
-        placeholder="Email"
-    />
-    <label for="age"></label><input
-        type="number"
-        name="age"
-        id="age"
-        placeholder="Edad"
-    />
-    <label for="password"></label><input
-        type="password"
-        name="password"
-        id="password"
-        placeholder="Contraseña"
-    />
-    <input type="submit" value="Registrarse" />
-</form>
+    <div style="margin-top: 1.5rem; text-align: center;">
+        <p>¿Usuario nuevo?</p>
+        <a href="/registro" class="btn btn-secondary">Registrarse</a>
+    </div>
+</div>
