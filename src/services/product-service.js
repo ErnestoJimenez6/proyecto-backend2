@@ -1,5 +1,5 @@
-import{productDao}from'../daos/mongodb/product-dao.js'
-import CustomError from'../utils/custom-error.js'
+import {productDaoMongo} from '../daos/mongodb/product-dao.js'
+import CustomError from '../utils/custom-error.js'
 
 class ProductService{
     constructor(dao){
@@ -30,11 +30,16 @@ class ProductService{
         }
     }
 
-    async create(productData){
-        try{
+    async create(productData) {
+        try {
             if(!productData.title||!productData.price){
                 throw new CustomError('Title and price are required',400)
             }
+
+            if(productData.price<=0){
+                throw new CustomError('Price must be greater than zero',400)
+            }
+
             const newProduct=await this.dao.create(productData)
             return newProduct
         }catch(error){
@@ -44,35 +49,47 @@ class ProductService{
 
     async update(id,updateData){
         try{
+            await this.getById(id)
             const updatedProduct=await this.dao.update(id,updateData)
-            if(!updatedProduct){
-                throw new CustomError(`Product with id ${id} not found`,404)
-            }
             return updatedProduct
-        } catch (error) {
-            throw this.handleError(error);
+        }catch(error){
+            throw this.handleError(error)
         }
     }
 
     async delete(id){
         try{
+            await this.getById(id)
             const deletedProduct=await this.dao.delete(id)
-            if(!deletedProduct){
-                throw new CustomError(`Product with id ${id} not found`,404)
+            return{
+                success:true,
+                message:`Product with id ${id} deleted successfully`,
+                deletedProduct
             }
-            return deletedProduct
+        } catch (error) {
+            throw this.handleError(error);
+        }
+    }
+
+    async getByCategory(category){
+        try{
+            const products=await this.dao.getAll({category})
+            if(!products||products.length===0){
+                throw new CustomError(`No products found in category ${category}`,404)
+            }
+            return products
         }catch(error){
             throw this.handleError(error)
         }
     }
 
     handleError(error){
-        if (error instanceof CustomError) {
+        if(error instanceof CustomError){
             return error
         }
-        console.error('ProductService Error:',error.message)
-        return new CustomError('Internal Server Error',500)
+            console.error('ProductService Error:',error.message)
+            return new CustomError('Internal Server Error',500)
     }
 }
 
-export const productService=new ProductService(productDao)
+export const productService = new ProductService(productDaoMongo)

@@ -1,4 +1,7 @@
+import 'dotenv/config'
 import express from 'express'
+import {json,urlencoded} from 'express'
+import morgan from 'morgan'
 import {program} from 'commander'
 import path from 'path'
 import session from 'express-session'
@@ -13,12 +16,13 @@ import {errorHandler} from './middlewares/error-handler.js'
 import {isAdmin,validateLogin} from'./middlewares/index.js'
 import config from './config/config.js'
 
-import apiRouter from './routes/index.js'
+import {apiRouter} from './routes/index.js'
 import emailRouter from './routes/email-router.js'
 import userCustomRouter from './routes/api/user.routes.js'
 import loginRouter from './routes/login.router.js'
 import productRouter from './routes/api/product-router.js'
 import viewsRouter from './routes/views.router.js'
+import './middlewares/passport.js'
 
 import './config/passport/jwt-strategy.js'
 import './config/passport/local-strategy.js'
@@ -63,12 +67,14 @@ const sessionOptions={
 }
 
 //middlewares
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
-app.use(cookieParser(process.env.SECRET_KEY))
-app.use(session(sessionOptions))
-app.use(passport.initialize())
-app.use(passport.session())
+app
+    .use(json())
+    .use(urlencoded({extended:true}))
+    .use(morgan('dev'))
+    .use(cookieParser(process.env.SECRET_KEY))
+    .use(session(sessionOptions))
+    .use(passport.initialize())
+    .use(passport.session())
 
 //solicitudes
 app.use((req,res,next)=>{
@@ -79,16 +85,18 @@ app.use((req,res,next)=>{
 app.use(express.static(path.join(__dirname,'public')))
 
 //handlebars
-app.engine('handlebars',handlebars.engine())
-app.set('views',path.join(__dirname,'../views'))
-app.set('view engine','handlebars')
+app
+    .engine('handlebars',handlebars.engine())
+    .set('views',path.join(__dirname,'../views'))
+    .set('view engine','handlebars')
 
 //rutas
-app.use('/api',apiRouter,emailRouter)
-app.use('/users',userCustomRouter)
-app.use('/products',productRouter)
-app.use('/login',loginRouter)
-app.use('/',viewsRouter)
+app
+    .use('/api',apiRouter,emailRouter)
+    .use('/users',userCustomRouter)
+    .use('/products',productRouter)
+    .use('/login',loginRouter)
+    .use('/',viewsRouter)
 
 //cookies
 app.get('/set-signed-cookie',(req,res)=>{
